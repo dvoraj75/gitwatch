@@ -58,7 +58,7 @@ class GitApi:
             self.logger.error(e)
             raise GitCommandException(f"Can't pull from repository: {repository.url} branch: {branch} remote: {remote}")
 
-    def push(self, repository: GitRepo, branch: str = "master", remote: str = "origin"):
+    def push(self, repository: GitRepo, branch: str = "master", remote: str = "origin") -> None:
         """
         Push to git repository
         Args:
@@ -81,9 +81,27 @@ class GitApi:
     def add(self):
         pass
 
-    def remote(self):
-        pass
+    def checkout(self, repository: GitRepo, branch: str) -> None:
+        """
+        Checkout to branch, if branch does not exist, create it.
+        Args:
+            repository (GitRepo): git repository
+            branch (str): name of git branch
+        Raises:
+        """
+        try:
+            repository.repo.git.checkout(branch)
+        except git.GitCommandError:
+            self.logger.warning(f"Branch {branch} in {repository.url} does not exist.")
+            self.logger.info(f"Creating branch: {branch}")
+            repository.repo.git.checkout(b=branch)
 
-    def branch(self):
-        pass
-
+    def branch(self, repository: GitRepo) -> str:
+        """
+        Return active branch of repository
+        Args:
+            repository (GitRepo): git repository
+        Returns:
+            str: name of active branch
+        """
+        return repository.repo.active_branch.name
