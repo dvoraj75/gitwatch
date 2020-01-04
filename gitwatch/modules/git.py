@@ -75,11 +75,38 @@ class GitApi:
             self.logger.error(e)
             raise GitCommandException(f"Can't push to repository: {repository.url} branch: {branch} remote: {remote}")
 
-    def commit(self):
-        pass
+    def commit(self, repository: GitRepo, commit_message: str) -> None:
+        """
+        Commit staged changes
+        Args:
+            repository (GitRepo): git repository
+            commit_message (str): commit message
+        Raises:
+            GitCommandException: raises if nothing to commit or commit_message is empty string
+        """
+        try:
+            repository.repo.git.commit(m=commit_message)
+        except git.CommandError as e:
+            err_msg = "nothing to commit" if commit_message else "commit_message can't be empty string"
+            self.logger.error(f"Can't commit changes, {err_msg}")
+            self.logger.error(e)
+            raise GitCommandException(f"Can't commit changes, {err_msg}")
 
-    def add(self):
-        pass
+    def add(self, repository: GitRepo, path: str) -> None:
+        """
+        Stage changes
+        Args:
+            repository (GitRepo): git repository
+            path (str): path to file
+        Raises:
+            GitCommandException: raises if path does not exist
+        """
+        try:
+            repository.repo.git.add(path)
+        except git.GitCommandError as e:
+            self.logger.error(f"Can't add file {path}. File does not exist")
+            self.logger.error(e)
+            raise GitCommandException(f"Can't add file {path}. File does not exist")
 
     def checkout(self, repository: GitRepo, branch: str) -> None:
         """
@@ -87,7 +114,6 @@ class GitApi:
         Args:
             repository (GitRepo): git repository
             branch (str): name of git branch
-        Raises:
         """
         try:
             repository.repo.git.checkout(branch)
