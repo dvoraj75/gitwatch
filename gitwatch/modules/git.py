@@ -1,4 +1,16 @@
+from dataclasses import dataclass
+
 import git
+
+
+@dataclass
+class GitRepo:
+    """
+    Dataclass representing git repository
+    """
+    repo: git.Repo
+    url: str
+    destination: str
 
 
 class GitApi:
@@ -6,7 +18,7 @@ class GitApi:
     def __init__(self, logger):
         self.logger = logger
 
-    def clone(self, url: str, to_path: str) -> git.Repo:
+    def clone(self, url: str, to_path: str) -> GitRepo:
         """
         Clone git repository
         Args:
@@ -15,10 +27,11 @@ class GitApi:
         Raises:
             git.GitCommandError: raises if destination folder exists or url is not accessible
         Returns:
-            git.Repo: instance of git repository
+            GitRepo: instance of git repository
         """
         try:
-            return git.Repo.clone_from(url, to_path)
+            repo = git.Repo.clone_from(url, to_path)
+            return GitRepo(repo, url, to_path)
         except git.GitCommandError as e:
             self.logger.error(e)
             raise
